@@ -1,6 +1,6 @@
-package org.jenkinsci.plugins.qywechat;
+package org.jenkinsci.plugins.lark;
 
-import org.jenkinsci.plugins.qywechat.model.NotificationConfig;
+import org.jenkinsci.plugins.lark.model.NotificationConfig;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
 import hudson.model.AbstractProject;
 import hudson.tasks.BuildStepDescriptor;
@@ -19,15 +19,15 @@ import java.util.logging.Logger;
  * 数据绑定
  * @author jiaju
  */
-@Symbol("qyWechatNotification")
+@Symbol("larkNotification")
 public class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
     private static final Logger logger = Logger.getLogger(DescriptorImpl.class.getName());
 
-    private NotificationConfig config = new NotificationConfig();
+    private final NotificationConfig config = new NotificationConfig();
 
     public DescriptorImpl() {
-        super(QyWechatNotification.class);
+        super(LarkNotification.class);
         load();
     }
 
@@ -53,14 +53,6 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
     public void setMentionedId(String mentionedId) {
         config.mentionedId = mentionedId;
-    }
-
-    public String getMentionedMobile() {
-        return config.mentionedMobile;
-    }
-
-    public void setMentionedMobile(String mentionedMobile) {
-        config.mentionedMobile = mentionedMobile;
     }
 
     public boolean isUseProxy() {
@@ -120,7 +112,6 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
         unsaveConfig.webhookUrl = config.webhookUrl;
         unsaveConfig.mentionedId = config.mentionedId;
-        unsaveConfig.mentionedMobile = config.mentionedMobile;
         unsaveConfig.topicName = config.topicName;
 
         unsaveConfig.useProxy = config.useProxy;
@@ -173,7 +164,6 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         config.webhookUrl = json.getString("webhookUrl");
         config.topicName = json.getString("topicName");
         config.mentionedId = json.getString("mentionedId");
-        config.mentionedMobile = json.getString("mentionedMobile");
         config.useProxy = json.get("useProxy")!=null;
         if(config.useProxy && json.get("useProxy") instanceof JSONObject){
             JSONObject jsonObject = json.getJSONObject("useProxy");
@@ -188,12 +178,12 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
     @Override
     public String getDisplayName() {
-        return "企业微信通知";
+        return "飞书通知";
     }
 
     @Override
     public String getHelpFile() {
-        return "/plugin/qy-wechat-notification/help.html";
+        return "/plugin/lark-notification/help.html";
     }
 
 }

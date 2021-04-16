@@ -1,9 +1,5 @@
-package org.jenkinsci.plugins.qywechat;
+package org.jenkinsci.plugins.lark;
 
-import org.jenkinsci.plugins.qywechat.dto.BuildBeginInfo;
-import org.jenkinsci.plugins.qywechat.dto.BuildMentionedInfo;
-import org.jenkinsci.plugins.qywechat.dto.BuildOverInfo;
-import org.jenkinsci.plugins.qywechat.model.NotificationConfig;
 import com.arronlong.httpclientutil.exception.HttpProcessException;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -14,6 +10,10 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import jenkins.tasks.SimpleBuildStep;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.plugins.lark.dto.BuildBeginInfo;
+import org.jenkinsci.plugins.lark.dto.BuildMentionedInfo;
+import org.jenkinsci.plugins.lark.dto.BuildOverInfo;
+import org.jenkinsci.plugins.lark.model.NotificationConfig;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
@@ -21,10 +21,11 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 /**
- * 企业微信构建通知
+ * 飞书构建通知
+ *
  * @author jiaju
  */
-public class QyWechatNotification extends Publisher implements SimpleBuildStep {
+public class LarkNotification extends Publisher implements SimpleBuildStep {
 
     private String webhookUrl;
 
@@ -40,14 +41,11 @@ public class QyWechatNotification extends Publisher implements SimpleBuildStep {
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     @DataBoundConstructor
-    public QyWechatNotification() {
+    public LarkNotification() {
     }
 
     /**
      * 开始执行构建
-     * @param build
-     * @param listener
-     * @return
      */
     @Override
     public boolean prebuild(AbstractBuild<?, ?> build, BuildListener listener) {
@@ -59,7 +57,7 @@ public class QyWechatNotification extends Publisher implements SimpleBuildStep {
             envVars = new EnvVars();
         }
         NotificationConfig config = getConfig(envVars);
-        if(StringUtils.isEmpty(config.webhookUrl)){
+        if (StringUtils.isEmpty(config.webhookUrl)) {
             return true;
         }
         this.projectName = build.getProject().getFullDisplayName();
@@ -75,24 +73,18 @@ public class QyWechatNotification extends Publisher implements SimpleBuildStep {
 
     /**
      * 构建结束
-     * @param run
-     * @param workspace
-     * @param launcher
-     * @param listener
-     * @throws InterruptedException
-     * @throws IOException
      */
     @Override
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
         NotificationConfig config = getConfig(run.getEnvironment(listener));
-        if(StringUtils.isEmpty(config.webhookUrl)){
+        if (StringUtils.isEmpty(config.webhookUrl)) {
             return;
         }
         Result result = run.getResult();
 
         //设置当前项目名称
-        if(run instanceof AbstractBuild){
-            this.projectName = run.getParent().getFullDisplayName() ;
+        if (run instanceof AbstractBuild) {
+            this.projectName = run.getParent().getFullDisplayName();
         }
 
         //构建结束通知
@@ -106,14 +98,14 @@ public class QyWechatNotification extends Publisher implements SimpleBuildStep {
         listener.getLogger().println("项目运行结果[" + result + "]");
 
         //运行不成功
-        if(result==null){
+        if (result == null) {
             return;
         }
 
         //仅在失败的时候，才进行@
-        if(!result.equals(Result.SUCCESS) || !config.failNotify){
+        if (!result.equals(Result.SUCCESS) || !config.failNotify) {
             //没有填写UserId和手机号码
-            if(StringUtils.isEmpty(config.mentionedId) && StringUtils.isEmpty(config.mentionedMobile)){
+            if (StringUtils.isEmpty(config.mentionedId)) {
                 return;
             }
 
@@ -129,23 +121,19 @@ public class QyWechatNotification extends Publisher implements SimpleBuildStep {
 
     /**
      * 推送消息
-     * @param logger
-     * @param url
-     * @param data
-     * @param config
      */
-    private void push(PrintStream logger, String url, String data, NotificationConfig config){
-        String []urls;
-        if(url.contains(",")){
+    private void push(PrintStream logger, String url, String data, NotificationConfig config) {
+        String[] urls;
+        if (url.contains(",")) {
             urls = url.split(",");
-        }else{
-            urls = new String[]{ url };
+        } else {
+            urls = new String[]{url};
         }
-        for(String u : urls){
+        for (String u : urls) {
             try {
                 String msg = NotificationUtil.push(u, data, config);
                 logger.println("通知结果" + msg);
-            }catch (HttpProcessException e){
+            } catch (HttpProcessException e) {
                 logger.println("通知异常" + e.getMessage());
                 e.printStackTrace();
             }
@@ -159,38 +147,29 @@ public class QyWechatNotification extends Publisher implements SimpleBuildStep {
 
     /**
      * 读取配置，将当前Job与全局配置整合
-     * @param envVars
-     * @return
      */
-    public NotificationConfig getConfig(EnvVars envVars){
+    public NotificationConfig getConfig(EnvVars envVars) {
         NotificationConfig config = DESCRIPTOR.getUnsaveConfig();
-        if(StringUtils.isNotEmpty(webhookUrl)){
+        if (StringUtils.isNotEmpty(webhookUrl)) {
             config.webhookUrl = webhookUrl;
         }
-        if(StringUtils.isNotEmpty(mentionedId)){
+        if (StringUtils.isNotEmpty(mentionedId)) {
             config.mentionedId = mentionedId;
-        }
-        if(StringUtils.isNotEmpty(mentionedMobile)){
-            config.mentionedMobile = mentionedMobile;
         }
         config.failNotify = failNotify;
         //使用环境变量
-        if(config.webhookUrl.contains("$")){
-            String val = NotificationUtil.replaceMultipleEnvValue(config.webhookUrl, envVars);
-            config.webhookUrl = val;
+        if (config.webhookUrl.contains("$")) {
+            config.webhookUrl = NotificationUtil.replaceMultipleEnvValue(config.webhookUrl, envVars);
         }
-        if(config.mentionedId.contains("$")){
-            String val = NotificationUtil.replaceMultipleEnvValue(config.mentionedId, envVars);
-            config.mentionedId = val;
-        }
-        if(config.mentionedMobile.contains("$")){
-            String val = NotificationUtil.replaceMultipleEnvValue(config.mentionedMobile, envVars);
-            config.mentionedMobile = val;
+        if (config.mentionedId.contains("$")) {
+            config.mentionedId = NotificationUtil.replaceMultipleEnvValue(config.mentionedId, envVars);
         }
         return config;
     }
 
-    /** 下面为GetSet方法，当前Job保存时进行绑定 **/
+    /**
+     * 下面为GetSet方法，当前Job保存时进行绑定
+     **/
 
     @DataBoundSetter
     public void setWebhookUrl(String webhookUrl) {

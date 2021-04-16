@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.qywechat.model;
+package org.jenkinsci.plugins.lark.model;
 
 import hudson.util.Secret;
 
@@ -9,17 +9,13 @@ import hudson.util.Secret;
 public class NotificationConfig {
 
     /**
-     * 企业微信WebHook地址
+     * 飞书WebHook地址
      */
     public String webhookUrl = "";
     /**
      * 通知用户ID
      */
     public String mentionedId = "";
-    /**
-     * 通知用户手机
-     */
-    public String mentionedMobile = "";
     /**
      * 主题名称
      */

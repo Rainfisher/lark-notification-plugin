@@ -5,20 +5,19 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>3.43</version>
+        <version>3.44</version>
     </parent>
-    <artifactId>qy-wechat-notification</artifactId>
+    <artifactId>lark-notification</artifactId>
     <version>1.0.2</version>
     <packaging>hpi</packaging>
 
-    <name>Qy Wechat Notification Plugin</name>
-    <description>A build status notifier that sends notifications to Qy Wechat</description>
-    <url>https://wiki.jenkins.io/display/JENKINS/Qy+Wechat+Notification+Plugin</url>
+    <name>Lark Notification Plugin</name>
+    <description>A build status notifier that sends notifications to lark</description>
     <developers>
         <developer>
-            <id>laijiaju</id>
-            <name>laijiaju</name>
-            <email>xiaoj313@gmail.com</email>
+            <id>zhouxi</id>
+            <name>zhouxi</name>
+            <email>zhouxi@gameale.com</email>
         </developer>
     </developers>
 
@@ -69,5 +68,19 @@
             <version>${httpclientutil.version}</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>InjectedTest.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
