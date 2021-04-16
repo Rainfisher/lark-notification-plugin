@@ -31,8 +31,6 @@ public class LarkNotification extends Publisher implements SimpleBuildStep {
 
     private String mentionedId;
 
-    private String mentionedMobile;
-
     private boolean failNotify;
 
     private String projectName;
@@ -182,11 +180,6 @@ public class LarkNotification extends Publisher implements SimpleBuildStep {
     }
 
     @DataBoundSetter
-    public void setMentionedMobile(String mentionedMobile) {
-        this.mentionedMobile = mentionedMobile;
-    }
-
-    @DataBoundSetter
     public void setFailNotify(boolean failNotify) {
         this.failNotify = failNotify;
     }
@@ -197,10 +190,6 @@ public class LarkNotification extends Publisher implements SimpleBuildStep {
 
     public String getMentionedId() {
         return mentionedId;
-    }
-
-    public String getMentionedMobile() {
-        return mentionedMobile;
     }
 
     public boolean isFailNotify() {

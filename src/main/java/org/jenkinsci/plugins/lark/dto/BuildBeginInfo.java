@@ -8,6 +8,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.lark.NotificationUtil;
 import org.jenkinsci.plugins.lark.model.NotificationConfig;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -105,22 +106,53 @@ public class BuildBeginInfo {
         }
 
         //组装内容
-        StringBuilder content = new StringBuilder();
-        if (StringUtils.isNotEmpty(topicName)) {
-            content.append(this.topicName);
+        Map<String, Object> post = new HashMap<>();
+        Map<String, Object> zhcn = new HashMap<>();
+        List<Object> contents = new ArrayList<>();
+        {
+            //第一行
+            List<Object> list = new ArrayList<>();
+            Map<String, Object> objs = new HashMap<>();
+            objs.put("tag", "text");
+            objs.put("text", String.format("%s【%s】开始构建", topicName, projectName));
+            list.add(objs);
+            contents.add(list);
         }
-        content.append("【" + this.projectName + "】开始构建\n");
-        content.append(" >构建参数：" + paramBuffer + "\n");
-        content.append(" >预计用时：" + durationTimeStr + "\n");
+        {
+            //构建参数
+            List<Object> list = new ArrayList<>();
+            Map<String, Object> objs = new HashMap<>();
+            objs.put("tag", "text");
+            objs.put("text", String.format(" >构建参数：%s", paramBuffer));
+            list.add(objs);
+            contents.add(list);
+        }
+        {
+            //预计用时
+            List<Object> list = new ArrayList<>();
+            Map<String, Object> objs = new HashMap<>();
+            objs.put("tag", "text");
+            objs.put("text", String.format(" >预计用时：%s", durationTimeStr));
+            list.add(objs);
+            contents.add(list);
+        }
         if (StringUtils.isNotEmpty(this.consoleUrl)) {
-            content.append(" >[查看控制台](" + this.consoleUrl + ")");
+            //预计用时
+            List<Object> list = new ArrayList<>();
+            Map<String, Object> objs = new HashMap<>();
+            objs.put("tag", "a");
+            objs.put("text", "[查看控制台]");
+            objs.put("href", this.consoleUrl);
+            list.add(objs);
+            contents.add(list);
         }
 
+        zhcn.put("content", contents);
+        post.put("zh_cn", zhcn);
         Map<String, Object> text = new HashMap<>();
-        text.put("text", content.toString());
-
+        text.put("post", post);
         Map<String, Object> data = new HashMap<>();
-        data.put("msg_type", "text");
+        data.put("msg_type", "post");
         data.put("content", text);
 
         return JSONObject.fromObject(data).toString();
